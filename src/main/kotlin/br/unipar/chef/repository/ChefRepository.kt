@@ -13,15 +13,14 @@ class ChefRepository(
     private val collectionName = "chef"
 
     fun salvar(chef: Chef): Chef {
-        val documento = firestore.collection(collectionName).document(chef.numeroChef!!)
-        val chefRegistrado = chef.copy(numeroChef = documento.id)
-        documento.set(chefRegistrado)
-        return chefRegistrado
+        val documento = firestore.collection(collectionName).document(chef.emailChef)
+        documento.set(chef)
+        return chef
     }
 
-    fun buscarId(numeroChef: String): Chef? {
+    fun buscarId(emailChef: String): Chef? {
         val documento = firestore.collection(collectionName)
-            .document(numeroChef).get().get()
+            .document(emailChef).get().get()
         return if (documento.exists())
             documento.toObject(Chef::class.java)
         else
@@ -33,31 +32,20 @@ class ChefRepository(
         return query.documents.mapNotNull { it.toObject(Chef::class.java) }
     }
 
-    fun excluirId(numeroChef: String): Boolean {
-        firestore.collection(collectionName).document(numeroChef).delete()
+    fun excluirId(emailChef: String): Boolean {
+        firestore.collection(collectionName).document(emailChef).delete()
         return true
     }
 
-    // ✅ Adiciona uma nova receita à lista do chef
-    fun adicionarReceita(numeroChef: String, novaReceita: Receita): Chef? {
-        val chef = buscarId(numeroChef)
-        return if (chef != null) {
-            chef.receitas.add(novaReceita)
-            salvar(chef)
-        } else null
-    }
-
-    // ✅ Remove uma receita por índice (ou outro identificador se preferir)
-    fun excluirReceita(numeroChef: String, indice: Int): Chef? {
-        val chef = buscarId(numeroChef)
+    fun excluirReceita(emailChef: String, indice: Int): Chef? {
+        val chef = buscarId(emailChef)
         return if (chef != null && indice in chef.receitas.indices) {
             chef.receitas.removeAt(indice)
             salvar(chef)
         } else null
     }
 
-    // ✅ Retorna todas as receitas do chef
-    fun listarReceitas(numeroChef: String): List<Receita> {
-        return buscarId(numeroChef)?.receitas ?: emptyList()
+    fun listarReceitas(emailChef: String): List<Receita> {
+        return buscarId(emailChef)?.receitas ?: emptyList()
     }
 }
